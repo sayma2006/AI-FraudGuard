@@ -1,3 +1,4 @@
+```python
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -95,27 +96,24 @@ class Transaction(BaseModel):
 
 
 # -----------------------------------
-# API Home
+# Main Web Interface
 # -----------------------------------
 
-@app.get("/")
-def home():
+@app.get("/", response_class=HTMLResponse)
+def home(request: Request):
 
-    return {
-        "message": "AI-FraudGuard API is running",
-        "version": "1.0.0",
-        "status": "online"
-    }
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={}
+    )
 
 
 # -----------------------------------
 # Web Application
 # -----------------------------------
 
-@app.get(
-    "/web",
-    response_class=HTMLResponse
-)
+@app.get("/web", response_class=HTMLResponse)
 def web_page(request: Request):
 
     return templates.TemplateResponse(
@@ -195,8 +193,11 @@ def predict(transaction: Transaction):
     # Return API response
     return {
         "prediction": result,
+
         "fraud_probability":
             round(float(probability) * 100, 2),
+
         "inference_time_ms":
             round(inference_time, 3)
     }
+```
