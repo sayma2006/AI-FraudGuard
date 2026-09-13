@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI-FraudGuard</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #f4f7fb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background: white;
+            padding: 35px;
+            border-radius: 18px;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            color: #172554;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #64748b;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .field label {
+            margin-bottom: 7px;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .field input,
+        .field select {
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .field input:focus,
+        .field select:focus {
+            border-color: #2563eb;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 25px;
+            padding: 14px;
+            border: none;
+            border-radius: 9px;
+            background: #2563eb;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        #result {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+            text-align: center;
+        }
+
+        .fraud {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .genuine {
+            background: #dcfce7;
+            border: 1px solid #22c55e;
+            color: #166534;
+        }
+
+        .result-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .probability {
+            font-size: 18px;
+            margin-top: 8px;
+        }
+
+        .inference {
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h1>🛡️ AI-FraudGuard</h1>
+        <p>Real-Time Credit Card Fraud Detection</p>
+    </div>
+
+    <div class="form-grid">
+
+        <div class="field">
+            <label>Transaction Amount</label>
+            <input type="number" id="amount" value="2500">
+        </div>
+
+        <div class="field">
+            <label>Transaction Hour</label>
+            <input type="number" id="transaction_hour" min="0" max="23" value="2">
+        </div>
+
+        <div class="field">
+            <label>Merchant Category</label>
+            <input type="text" id="merchant_category" value="electronics">
+        </div>
+
+        <div class="field">
+            <label>Foreign Transaction</label>
+            <select id="foreign_transaction">
+                <option value="0">No</option>
+                <option value="1" selected>Yes</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Location Mismatch</label>
+            <select id="location_mismatch">
+                <option value="0">No</option>
+                <option value="1" selected>Yes</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Device Trust Score</label>
+            <input type="number" id="device_trust_score" min="0" max="100" value="20">
+        </div>
+
+        <div class="field">
+            <label>Velocity - Last 24 Hours</label>
+            <input type="number" id="velocity_last_24h" min="0" value="8">
+        </div>
+
+        <div class="field">
+            <label>Cardholder Age</label>
+            <input type="number" id="cardholder_age" min="18" max="100" value="30">
+        </div>
+
+    </div>
+
+    <button onclick="checkTransaction()">
+        🔍 Check Transaction
+    </button>
+
+    <div id="result"></div>
+
+</div>
+
+
+<script>
+
+async function checkTransaction() {
+
+    const result = document.getElementById("result");
+
+    const transaction = {
+
+        amount: Number(document.getElementById("amount").value),
+
+        transaction_hour:
+            Number(document.getElementById("transaction_hour").value),
+
+        merchant_category:
+            document.getElementById("merchant_category").value,
+
+        foreign_transaction:
+            Number(document.getElementById("foreign_transaction").value),
+
+        location_mismatch:
+            Number(document.getElementById("location_mismatch").value),
+
+        device_trust_score:
+            Number(document.getElementById("device_trust_score").value),
+
+        velocity_last_24h:
+            Number(document.getElementById("velocity_last_24h").value),
+
+        cardholder_age:
+            Number(document.getElementById("cardholder_age").value)
+    };
+
+
+    result.style.display = "block";
+
+    result.className = "";
+
+    result.innerHTML = "Checking transaction...";
+
+
+    try {
+
+        const response = await fetch("/predict", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify(transaction)
+
+        });
+
+
+        const data = await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.detail
+                    ? JSON.stringify(data.detail)
+                    : "Prediction failed"
+            );
+        }
+
+
+        if (data.prediction === "Fraudulent") {
+
+            result.className = "fraud";
+
+            result.innerHTML = `
+                <div class="result-title">
+                    🚨 Potential Fraud Detected
+                </div>
+
+                <div class="probability">
+                    Fraud Probability:
+                    <strong>${data.fraud_probability}%</strong>
+                </div>
+
+                <div class="inference">
+                    Inference Time:
+                    ${data.inference_time_ms} ms
+                </div>
+            `;
+
+        } else {
+
+            result.className = "genuine";
+
+            result.innerHTML = `
+                <div class="result-title">
+                    ✅ Transaction Appears Genuine
+                </div>
+
+                <div class="probability">
+                    Fraud Probability:
+                    <strong>${data.fraud_probability}%</strong>
+                </div>
+
+                <div class="inference">
+                    Inference Time:
+                    ${data.inference_time_ms} ms
+                </div>
+            `;
+        }
+
+
+    } catch (error) {
+
+        result.className = "fraud";
+
+        result.innerHTML = `
+            <div class="result-title">
+                ❌ Error
+            </div>
+
+            <div>${error.message}</div>
+        `;
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>
