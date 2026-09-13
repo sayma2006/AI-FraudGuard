@@ -23,6 +23,7 @@ app = FastAPI(
 # Project paths
 # -----------------------------------
 
+# Current folder = D:\ProjectS\AI-FraudGuard
 BASE_DIR = Path(__file__).resolve().parent
 
 MODEL_PATH = BASE_DIR / "models" / "fraud_model.pkl"
@@ -148,27 +149,13 @@ def predict(transaction: Transaction):
     data = pd.DataFrame([
         {
             "amount": transaction.amount,
-
-            "transaction_hour":
-                transaction.transaction_hour,
-
-            "merchant_category":
-                transaction.merchant_category,
-
-            "foreign_transaction":
-                transaction.foreign_transaction,
-
-            "location_mismatch":
-                transaction.location_mismatch,
-
-            "device_trust_score":
-                transaction.device_trust_score,
-
-            "velocity_last_24h":
-                transaction.velocity_last_24h,
-
-            "cardholder_age":
-                transaction.cardholder_age
+            "transaction_hour": transaction.transaction_hour,
+            "merchant_category": transaction.merchant_category,
+            "foreign_transaction": transaction.foreign_transaction,
+            "location_mismatch": transaction.location_mismatch,
+            "device_trust_score": transaction.device_trust_score,
+            "velocity_last_24h": transaction.velocity_last_24h,
+            "cardholder_age": transaction.cardholder_age
         }
     ])
 
@@ -192,11 +179,12 @@ def predict(transaction: Transaction):
     # Return API response
     return {
         "prediction": result,
-
-        "fraud_probability":
-            round(float(probability) * 100, 2),
-
-        "inference_time_ms":
-            round(inference_time, 3)
+        "fraud_probability": round(
+            float(probability) * 100,
+            2
+        ),
+        "inference_time_ms": round(
+            inference_time,
+            3
+        )
     }
-```
